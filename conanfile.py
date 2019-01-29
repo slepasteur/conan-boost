@@ -39,7 +39,8 @@ class BoostConan(ConanFile):
         "skip_lib_rename": [True, False],
         "magic_autolink": [True, False],  # enables BOOST_ALL_NO_LIB
         "python_executable": "ANY",  # system default python installation is used, if None
-        "python_version": "ANY"  # major.minor; computed automatically, if None
+        "python_version": "ANY",  # major.minor; computed automatically, if None
+        "sanitize": "ANY" # memory, thread or None
     }
     options.update({"without_%s" % libname: [True, False] for libname in lib_list})
 
@@ -49,7 +50,8 @@ class BoostConan(ConanFile):
                        "skip_lib_rename=False",
                        "magic_autolink=False",
                        "python_executable=None",
-                       "python_version=None"]
+                       "python_version=None",
+                       "sanitize=None"]
 
     default_options.extend(["without_%s=False" % libname for libname in lib_list if libname != "python"])
     default_options.append("without_python=True")
@@ -459,6 +461,11 @@ class BoostConan(ConanFile):
             cxx_flags.append("-fvisibility=hidden")
             cxx_flags.append("-fvisibility-inlines-hidden")
             cxx_flags.append("-fembed-bitcode")
+
+        if self.options.sanitize == "memory":
+            cxx_flags.append("-fsanitize=memory")
+        elif self.options.sanitize == "thread":
+            cxx_flags.append("-fsanitize=thread")
 
         cxx_flags = 'cxxflags="%s"' % " ".join(cxx_flags) if cxx_flags else ""
         flags.append(cxx_flags)
